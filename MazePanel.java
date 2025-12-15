@@ -1,10 +1,15 @@
-import javax.swing.*;
 import java.awt.*;
 import java.util.Random;
+import javax.swing.*;
 
 public class MazePanel extends JPanel {
     private Cell[][] maze;
     private int rows, cols, cellSize;
+    private int playerRow = 0;
+    private int playerCol = 0;
+
+    private static final Color VISITED_COLOR = new Color(135, 206, 250); // Biru Langit Cerah Solid
+    private static final Color PATH_COLOR = new Color(255, 215, 0); // Emas Solid
 
     public MazePanel(int rows, int cols, int cellSize) {
         this.rows = rows;
@@ -16,7 +21,15 @@ public class MazePanel extends JPanel {
 
     public void setMaze(Cell[][] maze) {
         this.maze = maze;
-        repaint(); // Gambar ulang saat maze berubah
+        this.playerRow = 0;
+        this.playerCol = 0;
+        repaint(); 
+    }
+    
+    public void setPlayerPosition(int row, int col) {
+        this.playerRow = row;
+        this.playerCol = col;
+        repaint();
     }
 
     @Override
@@ -38,25 +51,21 @@ public class MazePanel extends JPanel {
         int x = cell.col * cellSize;
         int y = cell.row * cellSize;
         
-        // Draw terrain
         g.setColor(cell.terrain.color);
         g.fillRect(x + 1, y + 1, cellSize - 2, cellSize - 2);
         
-        // Add texture
         drawTerrainTexture(g, cell, x, y);
         
-        // Overlay for visited/path
         if (cell.isPath) {
-            g.setColor(new Color(255, 215, 0, 230));
+            g.setColor(PATH_COLOR);
             g.fillRect(x + 1, y + 1, cellSize - 2, cellSize - 2);
-            g.setColor(new Color(255, 255, 0));
+            g.setColor(PATH_COLOR.darker());
             g.drawRect(x + 1, y + 1, cellSize - 3, cellSize - 3);
         } else if (cell.isVisited) {
-            g.setColor(new Color(173, 216, 230, 180));
+            g.setColor(VISITED_COLOR);
             g.fillRect(x + 1, y + 1, cellSize - 2, cellSize - 2);
         }
         
-        // Draw walls
         g.setColor(new Color(80, 80, 80));
         int wallSize = 3;
         if (cell.topWall) g.fillRect(x, y, cellSize, wallSize);
@@ -64,8 +73,10 @@ public class MazePanel extends JPanel {
         if (cell.bottomWall) g.fillRect(x, y + cellSize - wallSize, cellSize, wallSize);
         if (cell.leftWall) g.fillRect(x, y, wallSize, cellSize);
         
-        // Draw Objects
-        if (cell.isStart) drawSteve(g, x, y);
+        if (cell.row == playerRow && cell.col == playerCol) {
+            drawPixelPlayer(g, x, y);
+        }
+        
         if (cell.isEnd) drawDiamond(g, x, y);
     }
     
@@ -81,23 +92,24 @@ public class MazePanel extends JPanel {
         }
     }
     
-    private void drawSteve(Graphics2D g, int x, int y) {
+    private void drawPixelPlayer(Graphics2D g, int x, int y) {
         int offset = 4;
         int size = cellSize - 8;
         
-        // Head
-        g.setColor(new Color(195, 135, 92));
-        g.fillRect(x + offset, y + offset, size, size/2);
-        // Hair
-        g.setColor(new Color(92, 52, 14));
-        g.fillRect(x + offset, y + offset, size, size/5);
-        // Eyes
-        g.setColor(new Color(78, 193, 227));
-        g.fillRect(x + offset + 2, y + offset + 3, 3, 2);
-        g.fillRect(x + offset + size - 5, y + offset + 3, 3, 2);
-        // Body
-        g.setColor(new Color(113, 193, 214));
-        g.fillRect(x + offset + 1, y + offset + size/2, size - 2, size/2);
+        g.setColor(new Color(220, 20, 60)); 
+        
+        g.fillRect(x + offset, y + offset + size/4, size, size*3/4);
+        g.fillRect(x + offset + size/4, y + offset, size/2, size/4);
+        
+        g.setColor(Color.WHITE);
+        int eyeSize = size / 4;
+        g.fillRect(x + offset + size/4 - 2, y + offset + size/4 + 2, eyeSize, eyeSize); // Kiri
+        g.fillRect(x + offset + size*3/4 - eyeSize + 2, y + offset + size/4 + 2, eyeSize, eyeSize); // Kanan
+        
+        g.setColor(Color.BLACK);
+        int pupilSize = size / 8;
+        g.fillRect(x + offset + size/4, y + offset + size/4 + 4, pupilSize, pupilSize); // Kiri
+        g.fillRect(x + offset + size*3/4 - eyeSize + 4, y + offset + size/4 + 4, pupilSize, pupilSize); // Kanan
     }
     
     private void drawDiamond(Graphics2D g, int x, int y) {
@@ -105,20 +117,17 @@ public class MazePanel extends JPanel {
         int cy = y + cellSize/2;
         int size = 8;
         
-        // Glow
         g.setColor(new Color(0, 255, 255, 100));
         int[] xPoints = {cx, cx + size, cx, cx - size};
         int[] yPoints = {cy - size, cy, cy + size, cy};
         g.fillPolygon(xPoints, yPoints, 4);
         
-        // Main diamond
         g.setColor(new Color(0, 255, 255));
         size = 6;
         int[] xPoints2 = {cx, cx + size, cx, cx - size};
         int[] yPoints2 = {cy - size, cy, cy + size, cy};
         g.fillPolygon(xPoints2, yPoints2, 4);
         
-        // Highlight
         g.setColor(Color.WHITE);
         g.fillRect(cx - 2, cy - 3, 2, 2);
     }

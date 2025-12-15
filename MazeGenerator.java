@@ -7,7 +7,7 @@ import javax.swing.plaf.basic.BasicButtonUI;
 
 public class MazeGenerator extends JFrame {
 
-    private static final int ROWS = 30;
+    private static final int ROWS = 25;
     private static final int COLS = 30;
     private static final int CELL_SIZE = 32;
     private static final int DELAY = 15;
